@@ -1,6 +1,6 @@
 ---
 name: git-commit
-description: Stages files, analyzes the diff, and commits with a conventional commit message.
+description: Stages files, analyzes the diff, and commits with a conventional commit message. Use this skill whenever the user wants to commit, says things like "commit this", "make a commit" or "ship it".
 ---
 
 # Git Commit
@@ -8,7 +8,7 @@ description: Stages files, analyzes the diff, and commits with a conventional co
 ## Format
 
 ```
-<type>[scope]: <description>
+<type>(<scope>): <description>
 ```
 
 | Type | When to use |
@@ -36,15 +36,15 @@ Add `!` after type/scope for breaking changes (e.g. `feat!:`).
 2. If nothing is staged, inspect all changes including untracked files:
    ```bash
    git status --short             # list all changed and untracked files
-   git diff --name-only           # list modified files
-   git diff                       # full diff of modified files
+   git diff --name-only           # list modified files with actual diff content
    ```
-   If there is nothing to commit (no changes, no untracked files), stop and tell the user there is nothing to commit.
+   Cross-check: only include a file if it actually has a diff or is genuinely untracked. Do not include files that appear in `git status` but have no real changes in `git diff`.
 
-   Otherwise, group the files by logical concern (e.g. feature code, tests, config, deps).
-   If changes span multiple unrelated concerns, **stage only one group** and handle the rest in subsequent commits.
+   If there is nothing to commit, stop and tell the user.
+
+   Otherwise, analyze all changes and group related files together. Unrelated changes go in separate commits. Stage only the first group:
    ```bash
-   git add <file1> <file2>        # stage only the logical group (works for both modified and untracked files)
+   git add <file1> <file2>
    ```
 
 3. Read the full staged diff, then analyze it to generate a commit message:
@@ -52,8 +52,8 @@ Add `!` after type/scope for breaking changes (e.g. `feat!:`).
    git diff --cached
    ```
    - **Type**: What kind of change?
-   - **Scope**: What module/area is affected?
-   - **Description**: One-line summary (<72 chars, present tense, imperative)
+   - **Scope**: What module/area is affected? (required)
+   - **Description**: Present tense imperative, no period, ≤50 chars
 
 4. **STOP. Do not run any git commands yet.**
 
@@ -80,9 +80,15 @@ Add `!` after type/scope for breaking changes (e.g. `feat!:`).
 
 ## Rules
 
-- Never use --no-verify
-- Never use --force
-- Never modify git config
-- Never stage `.env`, credentials, or private keys
-- If a hook fails, stop and report the error to the user — do not modify any files
+- ALWAYS include scope in parentheses
+- ALWAYS use present tense imperative verb for the subject
+- NEVER end subject with a period
+- NEVER exceed 50 chars in the subject line
+- NEVER use generic messages ("update code", "fix bug", "changes")
+- NEVER use --no-verify
+- NEVER use --force
+- NEVER modify git config
+- NEVER stage `.env`, credentials, or private keys
+- Group related changes into a single focused commit; stage unrelated changes in separate commits
+- If a pre-commit hook fails, stop and report the error — do not attempt to fix or bypass it
 - If nothing is staged after `git add`, stop and tell the user
