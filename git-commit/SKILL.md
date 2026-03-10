@@ -42,10 +42,13 @@ Add `!` after type/scope for breaking changes (e.g. `feat!:`).
 
    If there is nothing to commit, stop and tell the user.
 
-   Otherwise, analyze all changes and group related files together. Unrelated changes go in separate commits. Stage only the first group:
+   Otherwise, analyze every changed/untracked file and sort them into logical groups. Two files belong in the same group only if they serve the **same purpose** (e.g. a feature file and its test). Files that touch different concerns, scopes, or types MUST go in separate groups — never combine them into one commit.
+
+   If there are multiple groups, tell the user how many commits will be made, then focus only on the **first group** for now. Stage only those files:
    ```bash
    git add <file1> <file2>
    ```
+   The remaining groups will be handled automatically after each commit (step 5 loops back here).
 
 3. Read the full staged diff, then analyze it to generate a commit message:
    ```bash
@@ -92,3 +95,4 @@ Add `!` after type/scope for breaking changes (e.g. `feat!:`).
 - Group related changes into a single focused commit; stage unrelated changes in separate commits
 - If a pre-commit hook fails, stop and report the error — do not attempt to fix or bypass it
 - If nothing is staged after `git add`, stop and tell the user
+- NEVER add `Co-Authored-By` trailers or any attribution footers to commit messages
