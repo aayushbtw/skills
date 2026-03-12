@@ -5,94 +5,71 @@ description: Stages files, analyzes the diff, and commits with a conventional co
 
 # Git Commit
 
-## Format
-
-```
-<type>(<scope>): <description>
-```
-
-| Type | When to use |
-|------|-------------|
-| `feat` | A new capability, component, or behavior the project didn't have before (new skill, feature, command, config option). Not just any new file — purpose matters. |
-| `fix` | Correcting broken or incorrect behavior |
-| `docs` | Changes to documentation only (README, comments, markdown) |
-| `refactor` | Restructuring existing code without changing behavior or adding features |
-| `chore` | Routine upkeep with no behavior change — bumping versions, updating lockfiles, adding `.gitignore`, renaming |
-| `test` | Adding or updating tests |
-| `ci` | Changes to CI/CD pipelines or workflow files |
-| `revert` | Undoing a previous commit |
-
-Add `!` after type/scope for breaking changes (e.g. `feat!:`).
-
 ## Workflow
 
-1. Check if anything is staged:
+IMPORTANT: Follow these steps in order. Do not skip or reorder unless a step explicitly says to.
+
+1. Check what is staged and what isn't:
    ```bash
-   git diff --cached --name-only
+   git status --short
    ```
-   - If files are listed → skip to step 3
-   - If nothing → continue to step 2
+   - If nothing to commit at all, stop and tell the user.
+   - If nothing is staged → run `git add -A` to stage everything.
 
-2. If nothing is staged, inspect all changes including untracked files:
-   ```bash
-   git status --short             # list all changed and untracked files
-   git diff --name-only           # list modified files with actual diff content
-   ```
-   Cross-check: only include a file if it actually has a diff or is genuinely untracked. Do not include files that appear in `git status` but have no real changes in `git diff`.
-
-   If there is nothing to commit, stop and tell the user.
-
-   Otherwise, analyze every changed/untracked file and sort them into logical groups. Two files belong in the same group only if they serve the **same purpose** (e.g. a feature file and its test). Files that touch different concerns, scopes, or types MUST go in separate groups — never combine them into one commit.
-
-   If there are multiple groups, tell the user how many commits will be made, then focus only on the **first group** for now. Stage only those files:
-   ```bash
-   git add <file1> <file2>
-   ```
-   The remaining groups will be handled automatically after each commit (step 5 loops back here).
-
-3. Read the full staged diff, then analyze it to generate a commit message:
+2. Read the staged diff and analyze per the **Splitting commits** rules:
    ```bash
    git diff --cached
    ```
-   - **Type**: What kind of change?
-   - **Scope**: What module/area is affected? (required)
-   - **Description**: Present tense imperative, no period, ≤50 chars
+   - If there is **one group** → proceed to step 3.
+   - If there are **multiple groups** → tell the user how many commits will be made, then unstage everything and stage only the first group's files:
+     ```bash
+     git reset HEAD
+     git add <file1> <file2> ...
+     ```
 
-4. **STOP. Do not run any git commands yet.**
+3. Generate a commit message per the **Commit message** rules and commit:
+   ```bash
+   git commit -m "<generated message>"
+   ```
+   If unstaged changes remain, repeat from step 1.
 
-   Output exactly this (with the actual generated message substituted in):
+## Guidelines
 
-   ---
-   **Proposed commit message:**
-   `<generated message>`
+### Commit message
+- **Format**: `<type>(<scope>): <description>` where type is one of:
+  - `feat`: A new capability or behavior the project didn't have before
+  - `fix`: Correcting broken or incorrect behavior
+  - `docs`: Changes to documentation only
+  - `refactor`: Restructuring code without changing behavior
+  - `perf`: Performance improvements
+  - `chore`: Routine upkeep (e.g. versions, lockfiles, renaming, linting, formatting)
+  - `test`: Adding or updating tests
+  - `ci`: Changes to CI/CD pipelines or workflow files
+  - `revert`: Undoing a previous commit
+- **Scope**: ALWAYS include in parentheses (e.g. `feat(auth):`)
+- **Description**: Present tense imperative, no period, ≤50 chars
+- **Breaking changes**: Add `!` after type/scope (e.g. `feat!(scope):`)
+- **No generic messages**: Never use "update code", "fix bug", "changes"
+- **No attribution**: Never add `Co-Authored-By` trailers or footers
+- **Examples:**
+  - feat(auth): add OAuth2 login flow
+  - fix(api): handle null response from payment gateway
+  - docs(readme): add setup instructions
+  - refactor(db): extract query builder into separate module
+  - chore(deps): bump express to v5
+  - chore(lint): apply prettier formatting
+  - perf(search): add index on users.email column
+  - test(auth): add unit tests for token refresh
+  - ci(deploy): add staging environment workflow
+  - feat!(api): change response format to JSON:API
 
-   **What would you like to do?**
-   - `1` Commit
-   - `2` Edit message
-   - `3` Cancel
-   ---
+### Splitting commits
+- **Atomic commits**: Each commit must contain only related changes that serve a single purpose
+- **Split large changes**: If changes touch different concerns, different types (feat vs fix vs refactor), different file categories (source vs docs), or are large enough that breaking them down aids review
 
-   Then stop and wait for the user to reply before doing anything.
-
-5. Act on the reply:
-   - `1` → run `git commit -m "<generated message>"`
-   - `2` → ask for the new message, then repeat from step 4
-   - `3` → abort, do nothing
-
-   If unstaged changes remain after committing, repeat from step 2.
-
-## Rules
-
-- ALWAYS include scope in parentheses
-- ALWAYS use present tense imperative verb for the subject
-- NEVER end subject with a period
-- NEVER exceed 50 chars in the subject line
-- NEVER use generic messages ("update code", "fix bug", "changes")
-- NEVER use --no-verify
-- NEVER use --force
-- NEVER modify git config
-- NEVER stage `.env`, credentials, or private keys
-- Group related changes into a single focused commit; stage unrelated changes in separate commits
-- If a pre-commit hook fails, stop and report the error — do not attempt to fix or bypass it
-- If nothing is staged after `git add`, stop and tell the user
-- NEVER add `Co-Authored-By` trailers or any attribution footers to commit messages
+### Git safety
+- **No bypassing hooks**: Never use `--no-verify` or `--force`
+- **No config changes**: Never modify git config
+- **Sensitive files**: Never stage `.env`, credentials, or private keys
+- **Pre-commit failures**: Stop and report the error — do not attempt to fix or bypass it
+- **Empty staging**: If nothing is staged after `git add`, stop and tell the user
