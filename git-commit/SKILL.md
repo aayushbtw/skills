@@ -37,10 +37,10 @@ IMPORTANT: Follow these steps in order. Do not skip or reorder unless a step exp
 
 ### Commit message
 - **Format**: `<type>(<scope>): <description>` where type is one of:
-  - `feat`: A new capability or behavior the project didn't have before
+  - `feat`: A new capability or behavior the project didn't have before (renaming, restyling, or reorganizing existing features is NOT feat)
   - `fix`: Correcting broken or incorrect behavior
   - `docs`: Changes to documentation only
-  - `refactor`: Restructuring code without changing behavior
+  - `refactor`: Restructuring code without changing behavior (includes restyling/layout changes that don't add new functionality)
   - `perf`: Performance improvements
   - `chore`: Routine upkeep (e.g. versions, lockfiles, renaming, linting, formatting)
   - `test`: Adding or updating tests
