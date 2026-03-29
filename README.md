@@ -17,3 +17,4 @@ npx skills add aayushbtw/skills --skill git-commit
 | Skill | Description |
 |-------|-------------|
 | [git-commit](./git-commit/SKILL.md) | Stage files and commit with a conventional commit message |
+| [writing-guide](./writing-guide/SKILL.md) | Write, review, and improve articles and blog posts. Modified version of Sentry's [blog-writing-guide](https://github.com/getsentry/skills/blob/main/plugins/sentry-skills/skills/blog-writing-guide/SKILL.md). |
